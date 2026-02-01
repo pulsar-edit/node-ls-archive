@@ -1,12 +1,8 @@
-var ArchiveEntry, convertToTree, findEntryWithName, fs, isBzipPath, isGzipPath, isTarPath, isZipPath, listBzip, listGzip, listTar, listTarStream, listZip, path, readEntry, readFileFromBzip, readFileFromGzip, readFileFromTar, readFileFromTarStream, readFileFromZip, util, wrapCallback;
+const fs = require("fs");
+const path = require("path");
+const util = require("util");
 
-fs = require('fs');
-
-path = require('path');
-
-util = require('util');
-
-ArchiveEntry = class ArchiveEntry {
+class ArchiveEntry {
   constructor(path1, type) {
     this.path = path1;
     this.type = type;
@@ -16,11 +12,10 @@ ArchiveEntry = class ArchiveEntry {
   }
 
   add(entry) {
-    var child, name, segments;
     if (!this.isParentOf(entry)) {
       return false;
     }
-    segments = entry.getPath().substring(this.getPath().length + 1).split(path.sep);
+    let segments = entry.getPath().substring(this.getPath().length + 1).split(path.sep);
     if (segments.length === 0) {
       return false;
     }
@@ -28,8 +23,8 @@ ArchiveEntry = class ArchiveEntry {
       this.children.push(entry);
       return true;
     } else {
-      name = segments[0];
-      child = findEntryWithName(this.children, name);
+      let name = segments[0];
+      let child = findEntryWithName(this.children, name);
       if (child == null) {
         child = new ArchiveEntry(`${this.getPath()}${path.sep}${name}`, 5);
         this.children.push(child);
@@ -70,29 +65,29 @@ ArchiveEntry = class ArchiveEntry {
     return this.getPath();
   }
 
-};
+}
 
-findEntryWithName = function(entries, name) {
-  var entry, i, len;
-  for (i = 0, len = entries.length; i < len; i++) {
-    entry = entries[i];
+function findEntryWithName(entries, name) {
+  for (let i = 0; i < entries.length; i++) {
+    let entry = entries[i];
     if (name === entry.getName()) {
       return entry;
     }
   }
-};
+}
 
-convertToTree = function(entries) {
-  var entry, i, len, name, parent, rootEntries, segments;
-  rootEntries = [];
-  for (i = 0, len = entries.length; i < len; i++) {
-    entry = entries[i];
-    segments = entry.getPath().split(path.sep);
+function convertToTree(entries) {
+  let rootEntries = [];
+
+  for (let i = 0; i < entries.length; i++) {
+    let entry = entries[i];
+    let segments = entry.getPath().split(path.sep);
+
     if (segments.length === 1) {
       rootEntries.push(entry);
     } else {
-      name = segments[0];
-      parent = findEntryWithName(rootEntries, name);
+      let name = segments[0];
+      let parent = findEntryWithName(rootEntries, name);
       if (parent == null) {
         parent = new ArchiveEntry(name, 5);
         rootEntries.push(parent);
@@ -101,26 +96,25 @@ convertToTree = function(entries) {
     }
   }
   return rootEntries;
-};
+}
 
-wrapCallback = function(callback) {
-  var called;
-  called = false;
+function wrapCallback(cb) {
+  let called = false;
+
   return function(error, data) {
     if (!called) {
       if ((error != null) && !util.isError(error)) {
         error = new Error(error);
       }
       called = true;
-      return callback(error, data);
+      return cb(error, data);
     }
   };
-};
+}
 
-listZip = function(archivePath, options, callback) {
-  var entries, yauzl;
-  yauzl = require('yauzl');
-  entries = [];
+function listZip(archivePath, options, callback) {
+  const yauzl = require("yauzl");
+  let entries = [];
   return yauzl.open(archivePath, {
     lazyEntries: true
   }, function(error, zipFile) {
@@ -149,62 +143,63 @@ listZip = function(archivePath, options, callback) {
       return callback(null, entries);
     });
   });
-};
+}
 
-listGzip = function(archivePath, options, callback) {
-  var fileStream, gzipStream, zlib;
-  zlib = require('zlib');
-  fileStream = fs.createReadStream(archivePath);
-  fileStream.on('error', callback);
-  gzipStream = fileStream.pipe(zlib.createGunzip());
-  gzipStream.on('error', callback);
+function listGzip(archivePath, options, callback) {
+  const zlib = require("zlib");
+  let fileStream = fs.createReadStream(archivePath);
+  fileStream.on("error", callback);
+
+  let gzipStream = fileStream.pipe(zlib.createGunzip());
+  gzipStream.on("error", callback);
+
   return listTarStream(gzipStream, options, callback);
-};
+}
 
-listBzip = function(archivePath, options, callback) {
-  var bzip, bzipStream, fileStream;
-  bzip = require('unbzip2-stream');
-  fileStream = fs.createReadStream(archivePath);
-  fileStream.on('error', callback);
-  bzipStream = fileStream.pipe(bzip());
-  bzipStream.on('error', callback);
+function listBzip(archivePath, options, callback) {
+  const bzip = require("unbzip2-stream");
+
+  let fileStream = fs.createReadStream(archivePath);
+  fileStream.on("error", callback);
+
+  let bzipStream = fileStream.pipe(bzip());
+  bzipStream.on("error", callback);
+
   return listTarStream(bzipStream, options, callback);
-};
+}
 
-listTar = function(archivePath, options, callback) {
-  var fileStream;
-  fileStream = fs.createReadStream(archivePath);
-  fileStream.on('error', callback);
+function listTar(archivePath, options, callback) {
+  let fileStream = fs.createReadStream(archivePath);
+  fileStream.on("error", callback);
+
   return listTarStream(fileStream, options, callback);
-};
+}
 
-listTarStream = function(inputStream, options, callback) {
-  var entries, tarStream;
-  entries = [];
-  tarStream = inputStream.pipe(require('tar').Parse());
-  tarStream.on('error', callback);
-  tarStream.on('entry', function(entry) {
-    var entryPath, entryType;
-    if (entry.props.path.slice(-1) === '/') {
+function listTarStream(inputStream, options, callback) {
+  let entries = [];
+  let tarStream = inputStream.pipe(require("tar").Parse());
+  tarStream.on("error", callback);
+  tarStream.on("entry", function(entry) {
+    let entryPath;
+    if (entry.props.path.slice(-1) === "/") {
       entryPath = entry.props.path.slice(0, -1);
     } else {
       entryPath = entry.props.path;
     }
-    entryType = parseInt(entry.props.type);
+    let entryType = parseInt(entry.props.type);
     entryPath = entryPath.replace(/\//g, path.sep);
     return entries.push(new ArchiveEntry(entryPath, entryType));
   });
-  return tarStream.on('end', function() {
+  return tarStream.on("end", function () {
     if (options.tree) {
       entries = convertToTree(entries);
     }
     return callback(null, entries);
   });
-};
+}
 
-readFileFromZip = function(archivePath, filePath, callback) {
-  var yauzl;
-  yauzl = require('yauzl');
+function readFileFromZip(archivePath, filePath, callback) {
+  const yauzl = require("yauzl");
   return yauzl.open(archivePath, {
     lazyEntries: true
   }, function(error, zipFile) {
@@ -232,87 +227,85 @@ readFileFromZip = function(archivePath, filePath, callback) {
       }
     });
   });
-};
+}
 
-readFileFromGzip = function(archivePath, filePath, callback) {
-  var fileStream, gzipStream;
-  fileStream = fs.createReadStream(archivePath);
-  fileStream.on('error', callback);
-  gzipStream = fileStream.pipe(require('zlib').createGunzip());
-  gzipStream.on('error', callback);
-  gzipStream.on('end', function() {
+function readFileFromGzip(archivePath, filePath, callback) {
+  let fileStream = fs.createReadStream(archivePath);
+  fileStream.on("error", callback);
+  let gzipStream = fileStream.pipe(require("zlib").createGunzip());
+  gzipStream.on("error", callback);
+  gzipStream.on("end", function() {
     return callback(`${filePath} does not exist in the archive: ${archivePath}`);
   });
   return readFileFromTarStream(gzipStream, archivePath, filePath, callback);
-};
+}
 
-readFileFromBzip = function(archivePath, filePath, callback) {
-  var bzipStream, fileStream;
-  fileStream = fs.createReadStream(archivePath);
-  fileStream.on('error', callback);
-  bzipStream = fileStream.pipe(require('unbzip2-stream')());
-  bzipStream.on('error', callback);
-  bzipStream.on('end', function() {
+function readFileFromBzip(archivePath, filePath, callback) {
+  let fileStream = fs.createReadStream(archivePath);
+  fileStream.on("error", callback);
+  let bzipStream = fileStream.pipe(require("unbzip2-stream")());
+  bzipStream.on("error", callback);
+  bzipStream.on("end", function() {
     return callback(`${filePath} does not exist in the archive: ${archivePath}`);
   });
   return readFileFromTarStream(bzipStream, archivePath, filePath, callback);
-};
+}
 
-readFileFromTar = function(archivePath, filePath, callback) {
-  var fileStream;
-  fileStream = fs.createReadStream(archivePath);
+function readFileFromTar(archivePath, filePath, callback) {
+  let fileStream = fs.createReadStream(archivePath);
   fileStream.on('error', callback);
   fileStream.on('end', function() {
     return callback(`${filePath} does not exist in the archive: ${archivePath}`);
   });
   return readFileFromTarStream(fileStream, archivePath, filePath, callback);
-};
+}
 
-readFileFromTarStream = function(inputStream, archivePath, filePath, callback) {
-  var tar, tarStream;
-  tar = require('tar');
-  tarStream = inputStream.pipe(tar.Parse());
-  tarStream.on('error', callback);
-  return tarStream.on('entry', function(entry) {
+function readFileFromTarStream(inputStream, archivePath, filePath, callback) {
+  const tar = require("tar");
+  let tarStream = inputStream.pipe(tar.Parse());
+  tarStream.on("error", callback);
+
+  return tarStream.on("entry", function(entry) {
     if (filePath !== entry.props.path.replace(/\//g, path.sep)) {
       return;
     }
-    if (entry.props.type === '0') {
+    if (entry.props.type === "0") {
       return readEntry(entry, callback);
     } else {
       return callback(`${filePath} is not a normal file in the archive: ${archivePath}`);
     }
   });
-};
+}
 
-readEntry = function(entry, callback) {
-  var contents;
-  contents = [];
-  entry.on('data', function(data) {
+function readEntry(entry, callback) {
+  let contents = [];
+
+  entry.on("data", function(data) {
     return contents.push(data);
   });
-  return entry.on('end', function() {
+
+  return entry.on("end", function() {
     return callback(null, Buffer.concat(contents));
   });
-};
+}
 
-isTarPath = function(archivePath) {
-  return path.extname(archivePath) === '.tar';
-};
+function isTarPath(archivePath) {
+  return path.extname(archivePath) === ".tar";
+}
 
-isZipPath = function(archivePath) {
-  var extension;
-  extension = path.extname(archivePath);
-  return extension === '.epub' || extension === '.jar' || extension === '.love' || extension === '.war' || extension === '.zip' || extension === '.egg' || extension === '.whl' || extension === '.xpi' || extension === '.nupkg';
-};
+function isZipPath(archivePath) {
+  let ext = path.extname(archivePath);
+  let exts = [".epub", ".jar", ".love", ".war", ".zip", ".egg", ".whl", ".xpi", ".nupkg"];
+  return exts.includes(ext);
+}
 
-isGzipPath = function(archivePath) {
-  return path.extname(archivePath) === '.tgz' || path.extname(path.basename(archivePath, '.gz')) === '.tar';
-};
+function isGzipPath(archivePath) {
+  return path.extname(archivePath) === ".tgz" || path.extname(path.basename(archivePath, ".gz")) === ".tar";
+}
 
-isBzipPath = function(archivePath) {
-  return path.extname(archivePath) === '.tbz' || path.extname(archivePath) === '.tbz2' || path.extname(path.basename(archivePath, '.bz2')) === '.tar';
-};
+function isBzipPath(archivePath) {
+  return path.extname(archivePath) === ".tbz" || path.extname(archivePath) === ".tbz2" || path.extname(path.basename(archivePath, ".bz2")) === ".tar";
+}
 
 module.exports = {
   isPathSupported: function(archivePath) {
@@ -354,35 +347,34 @@ module.exports = {
     return void 0;
   },
   readGzip: function(gzipArchivePath, callback) {
-    var chunks, fileStream, gzipStream, zlib;
     callback = wrapCallback(callback);
-    zlib = require('zlib');
-    fileStream = fs.createReadStream(gzipArchivePath);
-    fileStream.on('error', callback);
-    gzipStream = fileStream.pipe(zlib.createGunzip());
-    gzipStream.on('error', callback);
-    chunks = [];
-    gzipStream.on('data', function(chunk) {
+    const zlib = require("zlib");
+    let fileStream = fs.createReadStream(gzipArchivePath);
+    fileStream.on("error", callback);
+    let gzipStream = fileStream.pipe(zlib.createGunzip());
+    gzipStream.on("error", callback);
+    let chunks = [];
+
+    gzipStream.on("data", function(chunk) {
       return chunks.push(chunk);
     });
-    return gzipStream.on('end', function() {
+    return gzipStream.on("end", function() {
       return callback(null, Buffer.concat(chunks));
     });
   },
   readBzip: function(bzipArchivePath, callback) {
-    var bzip, bzipStream, chunks, fileStream;
     callback = wrapCallback(callback);
-    bzip = require('unbzip2-stream');
-    fileStream = fs.createReadStream(bzipArchivePath);
-    fileStream.on('error', callback);
-    bzipStream = fileStream.pipe(bzip());
-    bzipStream.on('error', callback);
-    chunks = [];
-    bzipStream.on('data', function(chunk) {
+    const bzip = require("unbzip2-stream");
+    let fileStream = fs.createReadStream(bzipArchivePath);
+    fileStream.on("error", callback);
+    let bzipStream = fileStream.pipe(bzip());
+    bzipStream.on("error", callback);
+    let chunks = [];
+    bzipStream.on("data", function(chunk) {
       return chunks.push(chunk);
     });
-    return bzipStream.on('end', function() {
+    return bzipStream.on("end", function() {
       return callback(null, Buffer.concat(chunks));
     });
-  }
+  },
 };
