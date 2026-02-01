@@ -1,4 +1,4 @@
-# Node Ls Archive Module [![Build Status](https://travis-ci.org/atom/node-ls-archive.png)](https://travis-ci.org/atom/node-ls-archive)
+# Node Ls Archive Module
 
 List or read the files and folders inside archive files.
 
