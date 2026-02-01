@@ -1,4 +1,4 @@
-archive = require '../lib/ls-archive'
+archive = require '../src/ls-archive'
 path = require 'path'
 
 describe "bzipped tar files", ->
@@ -32,7 +32,7 @@ describe "bzipped tar files", ->
           expect(bzipPaths[0].isDirectory()).toBe false
           expect(bzipPaths[0].isFile()).toBe true
           expect(bzipPaths[0].isSymbolicLink()).toBe false
-      
+
       it "returns files in the bzipped tar archive", ->
         bzipPaths = null
         callback = (error, paths) -> bzipPaths = paths
@@ -68,7 +68,7 @@ describe "bzipped tar files", ->
           expect(bzipPaths[0].isDirectory()).toBe true
           expect(bzipPaths[0].isFile()).toBe false
           expect(bzipPaths[0].isSymbolicLink()).toBe false
-      
+
       it "returns folders in the bzipped tar archive", ->
         bzipPaths = null
         callback = (error, paths) -> bzipPaths = paths
@@ -125,7 +125,7 @@ describe "bzipped tar files", ->
         archive.readFile(archivePath, 'file.txt', callback)
         waitsFor -> pathContents?
         runs -> expect(pathContents.toString()).toBe 'hello\n'
-      
+
       it "calls back with the contents of the given path", ->
         archivePath = path.join(fixturesRoot, 'one-file.tbz2')
         pathContents = null

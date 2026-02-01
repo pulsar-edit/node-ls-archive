@@ -31,7 +31,7 @@
     "url": "https://github.com/atom/node-ls-archive/issues"
   },
   "homepage": "http://atom.github.io/node-ls-archive",
-  "main": "./lib/ls-archive.js",
+  "main": "./src/ls-archive.js",
   "bin": {
     "lsa": "./bin/lsa"
   },
