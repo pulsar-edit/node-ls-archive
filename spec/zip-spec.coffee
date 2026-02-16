@@ -1,4 +1,4 @@
-archive = require '../lib/ls-archive'
+archive = require '../src/ls-archive'
 path = require 'path'
 
 describe "zip files", ->
