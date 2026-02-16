@@ -2,12 +2,7 @@
   "name": "ls-archive",
   "description": "A package for listing and reading files in archive files",
   "version": "1.3.4",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://github.com/atom/node-ls-archive/raw/master/LICENSE.md"
-    }
-  ],
+  "licenses": "MIT",
   "keywords": [
     "ls",
     "zip",
@@ -25,10 +20,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/node-ls-archive.git"
+    "url": "https://github.com/pulsar-edit/node-ls-archive.git"
   },
   "bugs": {
-    "url": "https://github.com/atom/node-ls-archive/issues"
+    "url": "https://github.com/pulsar-edit/node-ls-archive/issues"
   },
   "homepage": "http://atom.github.io/node-ls-archive",
   "main": "./src/ls-archive.js",
