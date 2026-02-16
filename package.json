@@ -25,7 +25,6 @@
   "bugs": {
     "url": "https://github.com/pulsar-edit/node-ls-archive/issues"
   },
-  "homepage": "http://atom.github.io/node-ls-archive",
   "main": "./src/ls-archive.js",
   "bin": {
     "lsa": "./bin/lsa"
