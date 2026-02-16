@@ -1,21 +1,25 @@
-# Workflow intended to test PRs 
+# Workflow intended to test PRs
 
-name: CI - Test 
+name: CI - Test
 
-on: 
+on:
   pull_request:
-    
+
 jobs:
   tests:
-    runs-on: ubuntu-latest 
-    
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, '${{ env.NODE_VERSION }}' ]
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js 
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: '14'
-      - name: Install Dependencies 
-        run: npm install 
-      - name: Test 
-        run: npm run test 
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Test
+        run: npm run test
