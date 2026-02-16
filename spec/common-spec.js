@@ -1,9 +1,3 @@
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
- */
 const archive = require('../src/ls-archive');
 const path = require('path');
 
@@ -14,10 +8,10 @@ describe("Common behavior", function() {
       const callback = error => pathError = error;
       archive.list(path.join('tmp', 'file.txt'), callback);
       waitsFor(() => pathError != null);
-      return runs(() => expect(pathError.message).not.toBeNull());
+      runs(() => expect(pathError.message).not.toBeNull());
     });
 
-    return it("returns undefined", () => expect(archive.list(path.join('tmp', 'file.zip'), function() {})).toBeUndefined());
+    it("returns undefined", () => expect(archive.list(path.join('tmp', 'file.zip'), function() {})).toBeUndefined());
   });
 
   describe(".readFile()", function() {
@@ -26,13 +20,13 @@ describe("Common behavior", function() {
       const callback = error => pathError = error;
       archive.readFile(path.join('tmp', 'file.txt'), 'file.txt', callback);
       waitsFor(() => pathError != null);
-      return runs(() => expect(pathError.message).not.toBeNull());
+      runs(() => expect(pathError.message).not.toBeNull());
     });
 
-    return it("returns undefined", () => expect(archive.readFile(path.join('tmp', 'file.txt'), 'file.txt', function() {})).toBeUndefined());
+    it("returns undefined", () => expect(archive.readFile(path.join('tmp', 'file.txt'), 'file.txt', function() {})).toBeUndefined());
   });
 
-  return describe(".isPathSupported()", () => it("returns true for supported path extensions", function() {
+  describe(".isPathSupported()", () => it("returns true for supported path extensions", function() {
     expect(archive.isPathSupported(`${path.sep}a.epub`)).toBe(true);
     expect(archive.isPathSupported(`${path.sep}a.zip`)).toBe(true);
     expect(archive.isPathSupported(`${path.sep}a.jar`)).toBe(true);
@@ -49,6 +43,6 @@ describe("Common behavior", function() {
     expect(archive.isPathSupported(`${path.sep}`)).toBe(false);
     expect(archive.isPathSupported('')).toBe(false);
     expect(archive.isPathSupported(null)).toBe(false);
-    return expect(archive.isPathSupported()).toBe(false);
+    expect(archive.isPathSupported()).toBe(false);
   }));
 });
