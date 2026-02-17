@@ -30,17 +30,10 @@
     "lsa": "./bin/lsa"
   },
   "devDependencies": {
-    "grunt": "~0.4.0",
-    "grunt-contrib-coffee": "~0.9.0",
-    "coffeescript": "~1.7.0",
-    "grunt-cli": "~0.1.6",
-    "grunt-shell": "~0.2.2",
-    "jasmine-focused": "1.x",
-    "grunt-coffeelint": "0.0.6"
+    "jasmine-focused": "1.x"
   },
   "scripts": {
-    "prepublish": "grunt",
-    "test": "grunt test"
+    "test": "jasmine-focused --captureExceptions spec"
   },
   "dependencies": {
     "tar": "^2.2.1",
