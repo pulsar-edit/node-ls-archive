@@ -26,7 +26,7 @@ class ArchiveEntry {
       let name = segments[0];
       let child = findEntryWithName(this.children, name);
       if (child == null) {
-        child = new ArchiveEntry(`${this.getPath()}${path.sep}${name}`, 5);
+        child = new ArchiveEntry(`${this.getPath()}${path.sep}${name}`, "Directory");
         this.children.push(child);
       }
       if (child.isDirectory()) {
@@ -50,15 +50,15 @@ class ArchiveEntry {
   }
 
   isFile() {
-    return this.type === 0;
+    return this.type === "File";
   }
 
   isDirectory() {
-    return this.type === 5;
+    return this.type === "Directory";
   }
 
   isSymbolicLink() {
-    return this.type === 2;
+    return this.type === "SymbolicLink";
   }
 
   toString() {
@@ -89,7 +89,7 @@ function convertToTree(entries) {
       let name = segments[0];
       let parent = findEntryWithName(rootEntries, name);
       if (parent == null) {
-        parent = new ArchiveEntry(name, 5);
+        parent = new ArchiveEntry(name, "Directory");
         rootEntries.push(parent);
       }
       parent.add(entry);
@@ -127,10 +127,10 @@ function listZip(archivePath, options, callback) {
       var entryPath, entryType;
       if (entry.fileName.slice(-1) === '/') {
         entryPath = entry.fileName.slice(0, -1);
-        entryType = 5;
+        entryType = "Directory";
       } else {
         entryPath = entry.fileName;
-        entryType = 0;
+        entryType = "File";
       }
       entryPath = entryPath.replace(/\//g, path.sep);
       entries.push(new ArchiveEntry(entryPath, entryType));
@@ -171,24 +171,22 @@ function listBzip(archivePath, options, callback) {
 function listTar(archivePath, options, callback) {
   let fileStream = fs.createReadStream(archivePath);
   fileStream.on("error", callback);
-
   return listTarStream(fileStream, options, callback);
 }
 
 function listTarStream(inputStream, options, callback) {
   let entries = [];
-  let tarStream = inputStream.pipe(require("tar").Parse());
+  let tarStream = inputStream.pipe(require("tar").t({ strict: true }));
   tarStream.on("error", callback);
   tarStream.on("entry", function(entry) {
     let entryPath;
-    if (entry.props.path.slice(-1) === "/") {
-      entryPath = entry.props.path.slice(0, -1);
+    if (entry.path.slice(-1) === "/") {
+      entryPath = entry.path.slice(0, -1);
     } else {
-      entryPath = entry.props.path;
+      entryPath = entry.path;
     }
-    let entryType = parseInt(entry.props.type);
     entryPath = entryPath.replace(/\//g, path.sep);
-    return entries.push(new ArchiveEntry(entryPath, entryType));
+    return entries.push(new ArchiveEntry(entryPath, entry.type));
   });
   return tarStream.on("end", function () {
     if (options.tree) {
@@ -262,14 +260,14 @@ function readFileFromTar(archivePath, filePath, callback) {
 
 function readFileFromTarStream(inputStream, archivePath, filePath, callback) {
   const tar = require("tar");
-  let tarStream = inputStream.pipe(tar.Parse());
+  let tarStream = inputStream.pipe(tar.t({ strict: true }));
   tarStream.on("error", callback);
 
   return tarStream.on("entry", function(entry) {
-    if (filePath !== entry.props.path.replace(/\//g, path.sep)) {
+    if (filePath !== entry.path.replace(/\//g, path.sep)) {
       return;
     }
-    if (entry.props.type === "0") {
+    if (entry.type === "File") {
       return readEntry(entry, callback);
     } else {
       return callback(`${filePath} is not a normal file in the archive: ${archivePath}`);
