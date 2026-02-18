@@ -1,0 +1,26 @@
+name: NPM Publish
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 20
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org/
+      - name: Install Dependencies
+        run: |
+          npm ci
+      - run: |
+          npm run test
+      - run: npm publish --access public

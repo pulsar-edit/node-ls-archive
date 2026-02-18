@@ -1,6 +1,5 @@
 build/
 spec/
-src/
 *.coffee
 .travis.yml
 .npmignore
